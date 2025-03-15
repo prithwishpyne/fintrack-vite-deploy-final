@@ -4,18 +4,28 @@ import Transactions from "../transactions/Transactions";
 import AssetModal from "./AssetModal";
 import LiabilityModal from "./LiabilityModal";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
+  ArcElement,
+} from "chart.js";
+import { Line, Pie } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 import { Button, Typography, Skeleton } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import {
@@ -272,12 +282,7 @@ const Dashboard = ({ userName }) => {
             >
               Income vs Expenses
             </Typography>
-            <div
-              style={{
-                width: "100%",
-                height: 300,
-              }}
-            >
+            <div style={{ width: "100%", height: 300 }}>
               {isLoading ? (
                 <Skeleton
                   variant="rectangular"
@@ -286,29 +291,65 @@ const Dashboard = ({ userName }) => {
                   sx={{ borderRadius: 2 }}
                 />
               ) : monthlyData.length > 0 ? (
-                <ResponsiveContainer>
-                  <LineChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="income"
-                      stroke="#4CAF50"
-                      strokeWidth={2}
-                      name="Income"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="expenses"
-                      stroke="#f44336"
-                      strokeWidth={2}
-                      name="Expenses"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <Line
+                  data={{
+                    labels: monthlyData.map((data) => data.month),
+                    datasets: [
+                      {
+                        label: "Income",
+                        data: monthlyData.map((data) => data.income),
+                        borderColor: "#4CAF50",
+                        tension: 0.1,
+                        borderWidth: 2,
+                      },
+                      {
+                        label: "Expenses",
+                        data: monthlyData.map((data) => data.expenses),
+                        borderColor: "#f44336",
+                        tension: 0.1,
+                        borderWidth: 2,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        grid: {
+                          color: "rgba(0, 0, 0, 0.1)",
+                        },
+                        ticks: {
+                          font: {
+                            size: 13,
+                          },
+                        },
+                      },
+                      x: {
+                        grid: {
+                          display: false,
+                        },
+                        ticks: {
+                          font: {
+                            size: 14,
+                          },
+                        },
+                      },
+                    },
+                    plugins: {
+                      legend: {
+                        position: "bottom",
+                        labels: {
+                          font: {
+                            size: 14,
+                          },
+                          padding: 15,
+                        },
+                      },
+                    },
+                  }}
+                />
               ) : (
                 <div
                   style={{
@@ -333,12 +374,7 @@ const Dashboard = ({ userName }) => {
             >
               Expenses by Category
             </Typography>
-            <div
-              style={{
-                width: "100%",
-                height: 300,
-              }}
-            >
+            <div style={{ width: "100%", height: 300 }}>
               {isLoading ? (
                 <Skeleton
                   variant="rectangular"
@@ -347,29 +383,36 @@ const Dashboard = ({ userName }) => {
                   sx={{ borderRadius: 2 }}
                 />
               ) : expensesByCategory.length > 0 ? (
-                <ResponsiveContainer>
-                  <PieChart>
-                    <Pie
-                      data={expensesByCategory}
-                      dataKey="amount"
-                      nameKey="category"
-                      // cx="50%"
-                      // cy="50%"
-                      outerRadius={90}
-                      fill="#8884d8"
-                      label
-                    >
-                      {expensesByCategory.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                <Pie
+                  data={{
+                    labels: expensesByCategory.map((item) => item.category),
+                    datasets: [
+                      {
+                        data: expensesByCategory.map((item) => item.amount),
+                        backgroundColor: expensesByCategory.map(
+                          (_, index) => COLORS[index % COLORS.length]
+                        ),
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: "bottom",
+                        labels: {
+                          font: {
+                            size: 14,
+                          },
+                          padding: 25,
+                          boxWidth: 30,
+                          boxHeight: 15,
+                        },
+                      },
+                    },
+                  }}
+                />
               ) : (
                 <div
                   style={{
